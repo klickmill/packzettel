@@ -2,7 +2,7 @@
 
 // Bei jeder Änderung an den Dateien hochzählen. Der neue Name legt einen neuen
 // Cache an, und beim activate fliegen alle Caches mit anderem Namen raus.
-var VERSION = "packzettel-v3";
+var VERSION = "packzettel-v4";
 
 var DATEIEN = [
   "./",
