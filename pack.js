@@ -195,9 +195,42 @@
     var merken = Array.isArray(d.merken) ? d.merken.map(function (m) {
       if (!m || typeof m !== "object") return null;
       var n = String(m.name || "").trim().slice(0, 60);
-      return n ? { name: n, kat: KATEGORIEN.indexOf(m.kat) >= 0 ? m.kat : "Unterwegs" } : null;
+      if (!n) return null;
+      var g = { name: n, kat: KATEGORIEN.indexOf(m.kat) >= 0 ? m.kat : "Unterwegs" };
+      var arten = artenSaeubern(m.arten);
+      if (arten.length) g.arten = arten;
+      return g;
     }).filter(Boolean).slice(0, 200) : [];
     return { reisen: gut, merken: merken, kaputt: kaputt };
+  }
+  // Gemerkte eigene Gegenstände tragen die Reisearten, bei denen sie ergänzt wurden.
+  // Ohne "arten" (gemerkt vor Version 1.4) gelten sie wie bisher für jede Reise.
+  function artenSaeubern(a) {
+    if (!Array.isArray(a)) return [];
+    return a.filter(function (x, i) { return ART_NAME.hasOwnProperty(x) && a.indexOf(x) === i; });
+  }
+  function merkenDazu(merken, name, kat, art) {
+    var key = eigenSchluessel(name), liste = merken.slice();
+    var i = liste.findIndex(function (m) { return eigenSchluessel(m.name) === key; });
+    var gueltig = ART_NAME.hasOwnProperty(art);
+    if (i >= 0) {
+      var m = liste[i];
+      if (!gueltig && Array.isArray(m.arten)) {
+        // Ohne Reiseart (zum Beispiel aus einer alten Sicherung) gilt der Eintrag für jede Reise.
+        var ohne = Object.assign({}, m); delete ohne.arten; liste[i] = ohne;
+      } else if (gueltig && Array.isArray(m.arten) && m.arten.indexOf(art) < 0) {
+        liste[i] = Object.assign({}, m, { arten: m.arten.concat([art]) });
+      }
+      return liste;
+    }
+    var neu = { name: name, kat: kat };
+    if (gueltig) neu.arten = [art];
+    liste.push(neu);
+    return liste.slice(-200);
+  }
+  function gemerktFuer(merken, art) {
+    return merken.filter(function (m) { return !Array.isArray(m.arten) || !m.arten.length || m.arten.indexOf(art) >= 0; })
+      .map(function (m) { return { name: m.name, kat: m.kat }; });
   }
   function zusammenfuehren(alt, neu) {
     var nachId = {}, dazu = 0, aktualisiert = 0;
@@ -212,6 +245,7 @@
   var api = { eigenSchluessel: eigenSchluessel, ARTEN: ARTEN, WETTER: WETTER, VERKEHR: VERKEHR, EXTRAS: EXTRAS, KATEGORIEN: KATEGORIEN, ART_NAME: ART_NAME,
     WETTER_NAME: WETTER_NAME, VERKEHR_NAME: VERKEHR_NAME, EXTRA_NAME: EXTRA_NAME, schluessel: schluessel, saeubern: saeubern,
     vorschlaege: vorschlaege, liste: liste, fortschritt: fortschritt, text: text, sicherung: sicherung,
+    merkenDazu: merkenDazu, gemerktFuer: gemerktFuer,
     sicherungLesen: sicherungLesen, zusammenfuehren: zusammenfuehren };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else wurzel.Pack = api;

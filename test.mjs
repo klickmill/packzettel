@@ -96,4 +96,29 @@ assert.equal(m.dazu, 1);
 assert.equal(m.aktualisiert, 1);
 assert.equal(m.liste.find((x) => x.id === "reise01").name, "Kreta 2027");
 
+// Gemerktes je Reiseart (1.4): Skischuhe nicht in den Strandurlaub, Altdaten ohne arten wie bisher.
+let mk = P.merkenDazu([], "Skischuhe", "Kleidung", "winter");
+assert.deepEqual(mk, [{ name: "Skischuhe", kat: "Kleidung", arten: ["winter"] }]);
+mk = P.merkenDazu(mk, "Skischuhe", "Kleidung", "berge");
+assert.deepEqual(mk[0].arten, ["winter", "berge"]);
+mk = P.merkenDazu(mk, "Skischuhe", "Kleidung", "berge");
+assert.deepEqual(mk[0].arten, ["winter", "berge"], "gleiche Art nicht doppelt");
+const alt = [{ name: "Kindle", kat: "Technik" }];
+mk = P.merkenDazu(alt.concat(mk), "Kindle", "Technik", "strand");
+assert.equal(mk[0].arten, undefined, "Altdaten ohne arten bleiben für jede Reise");
+assert.deepEqual(P.gemerktFuer(mk, "strand"), [{ name: "Kindle", kat: "Technik" }]);
+assert.deepEqual(P.gemerktFuer(mk, "winter"), [{ name: "Kindle", kat: "Technik" }, { name: "Skischuhe", kat: "Kleidung" }]);
+assert.deepEqual(P.merkenDazu([], "Buch", "Technik", "gibtsnicht"), [{ name: "Buch", kat: "Technik" }], "unbekannte Art: wie bisher für jede Reise");
+// arten überleben Sicherung und Laden, Unsinn fällt raus
+const s2 = P.sicherungLesen(P.sicherung([], [{ name: "Skischuhe", kat: "Kleidung", arten: ["winter", "x", "winter"] }, { name: "Kindle", kat: "Technik" }]));
+assert.deepEqual(s2.merken, [{ name: "Skischuhe", kat: "Kleidung", arten: ["winter"] }, { name: "Kindle", kat: "Technik" }]);
+const voll = P.merkenDazu(Array.from({ length: 200 }, (_, i) => ({ name: "x" + i, kat: "Technik" })), "neu", "Technik", "strand");
+assert.equal(voll.length, 200);
+assert.equal(voll[voll.length - 1].name, "neu", "neuer Eintrag bleibt, der älteste fällt raus");
+assert.ok(!voll.some((m) => m.name === "x0"));
+// Import: Eintrag ohne Art aus der Sicherung macht einen art-gebundenen wieder zu "jede Reise"
+const imp = P.merkenDazu([{ name: "Kindle", kat: "Technik", arten: ["strand"] }], "Kindle", "Technik", null);
+assert.equal(imp[0].arten, undefined);
+assert.deepEqual(P.gemerktFuer(imp, "winter"), [{ name: "Kindle", kat: "Technik" }]);
+
 console.log("pack.js: alle Prüfungen bestanden");
