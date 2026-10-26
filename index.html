@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Packzettel: deine Packliste in 30 Sekunden, aus Reiseart, Dauer, Wetter und Begleitung. Abhaken, ergänzen, teilen.">
+<meta name="description" content="Packzettel: deine Packliste in wenigen Schritten, aus Reiseart, Dauer, Wetter und Begleitung. Abhaken, ergänzen, teilen.">
 <meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e1116" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Packzettel">
-<title>Packzettel</title>
+<title>Packzettel: Packliste für deine Reise</title>
 <style>
   /* Kühles Grau mit Cyan als einzigem Akzent. Kontraste gerechnet, Textfarben über 4,5 zu 1. */
   :root {
@@ -44,6 +44,7 @@
   .seite { max-width: 560px; margin: 0 auto; padding: 16px 16px 40px; display: grid; gap: 16px; }
   .kopf { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0; }
   .marke { margin: 0; font-size: 1.25rem; font-weight: 750; letter-spacing: -0.01em; }
+  .unterzeile { margin: 2px 0 0; font-size: 0.85rem; color: var(--leise); }
   .karte { background: var(--card); border: 1px solid var(--rand); border-radius: var(--r-karte); box-shadow: var(--schatten); padding: 18px; }
   h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; }
   h3 { margin: 0; font-size: 1rem; font-weight: 700; }
@@ -65,6 +66,8 @@
   .chips label { display: flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid var(--rand); border-radius: var(--r-feld);
     font-weight: 600; font-size: 0.9rem; cursor: pointer; background: var(--vertieft); color: var(--leise); text-align: center; padding: 4px 6px; }
   .chips input:checked + label { background: var(--akzent); border-color: var(--akzent); color: var(--auf-akzent); }
+  /* Sehr schmale Handys: drei Knöpfe mit „Geschäftlich“ oder „Bahn oder Bus“ passen nicht nebeneinander. */
+  @media (max-width: 360px) { .chips { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .chips input:focus-visible + label { outline: 2px solid var(--akzent); outline-offset: 2px; }
   .fehler { color: var(--rot); font-size: 0.9rem; margin: 0; }
 
@@ -123,23 +126,33 @@
 <main class="seite">
 
   <header class="kopf">
-    <h1 class="marke">Packzettel</h1>
+    <div>
+      <h1 class="marke">Packzettel</h1>
+      <p class="unterzeile">Packliste für deine Reise</p>
+    </div>
     <button class="knopf k" type="button" id="neu-knopf" data-ev="neue_reise" hidden>Neue Reise</button>
   </header>
 
   <section class="karte" id="form-karte" aria-labelledby="form-titel">
-    <h2 id="form-titel">Deine Packliste in 30 Sekunden</h2>
-    <p class="leise" id="form-text">Sag, wohin und wie lang. Packzettel baut dir die Liste, du hakst ab und ergänzt, was dir fehlt.</p>
+    <h2 id="form-titel">Deine Packliste</h2>
+    <div class="leise" id="form-text">
+      <p><strong>Das Problem:</strong> Beim Kofferpacken vergisst du etwas oder packst zu viel ein.</p>
+      <p><strong>Die Lösung:</strong> Du sagst, was für eine Reise es ist, wie lange, womit du reist, wie das Wetter wird und wer mitkommt. Packzettel macht dir daraus eine Liste zum Abhaken. Bei vielen Kleidungsstücken steht eine Anzahl dabei, die sich nach der Dauer richtet. Was dir fehlt, ergänzt du selbst.</p>
+      <p><strong>Zuerst:</strong> Trag ein, wohin es geht, und tipp unten auf „Packliste erstellen“.</p>
+    </div>
+    <p class="klein leise" id="form-vorwahl">Schon ausgewählt sind 7 Tage, Städtereise, gemischtes Wetter und Flug. Tipp an, was bei dir anders ist.</p>
     <form id="formular" novalidate>
       <div class="feld">
         <label for="f-name">Wohin geht es?</label>
-        <input type="text" id="f-name" maxlength="60" autocomplete="off" placeholder="zum Beispiel Kreta">
+        <input type="text" id="f-name" maxlength="60" autocomplete="off" placeholder="z. B. Kreta" aria-describedby="f-name-hilfe">
+        <p class="klein leise" id="f-name-hilfe" style="margin:0">Das wird der Name deiner Liste.</p>
       </div>
       <p class="fehler" id="f-name-fehler" role="alert" hidden></p>
       <fieldset style="border:0;padding:0;margin:0">
         <legend class="label" style="margin-bottom:6px">Was für eine Reise?</legend>
         <div class="chips" id="f-art"></div>
       </fieldset>
+      <p class="klein leise" style="margin:-4px 0 0">Du kannst nur eine Art wählen. Wer mitkommt und was du vorhast, zum Beispiel Kind, Hund, Sport oder Laptop, tippst du weiter unten bei „Was trifft noch zu?“ an.</p>
       <div class="zwei">
         <div class="feld">
           <label for="f-tage">Wie viele Tage?</label>
@@ -159,6 +172,7 @@
         <legend class="label" style="margin-bottom:6px">Was trifft noch zu?</legend>
         <div class="chips" id="f-extras"></div>
       </fieldset>
+      <p class="klein leise" style="margin:-4px 0 0">Hier kannst du mehrere antippen, oder keins.</p>
       <div class="knopfreihe">
         <button class="knopf haupt" type="submit" id="f-speichern">Packliste erstellen</button>
         <button class="knopf" type="button" id="f-abbrechen" hidden>Abbrechen</button>
@@ -180,7 +194,7 @@
     <div class="knopfreihe" style="margin-top:16px">
       <button class="knopf" type="button" id="teilen" data-ev="liste_teilen">Liste teilen</button>
       <button class="knopf" type="button" id="bearbeiten" data-ev="reise_bearbeiten">Reise ändern</button>
-      <button class="knopf" type="button" id="zuruecksetzen" data-ev="haken_zuruecksetzen">Alle Häkchen weg</button>
+      <button class="knopf" type="button" id="zuruecksetzen" data-ev="haken_zuruecksetzen">Alle Häkchen entfernen</button>
     </div>
     <div class="feld" id="teilen-feld" hidden style="margin-top:12px">
       <label for="teilen-text">Deine Liste als Text. Markieren und kopieren, dann einfügen, wo du willst.</label>
@@ -195,8 +209,9 @@
 
   <section class="karte">
     <details id="einstellungen">
-      <summary data-ev="einstellungen">Sichern und Einstellungen</summary>
-      <p class="klein leise">Deine Listen liegen nur in diesem Browser auf diesem Gerät. Was du selbst ergänzt, merkt sich Packzettel für die nächste Reise derselben Art.</p>
+      <summary data-ev="einstellungen">Sichern und gemerkte Dinge</summary>
+      <p class="klein leise">Deine Listen liegen nur in diesem Browser auf diesem Gerät. Löschst du die Daten des Browsers, sind sie weg. Sichere sie deshalb ab und zu mit „Sicherung speichern“. Das lädt eine Datei herunter. Mit „Sicherung einspielen“ holst du deine Listen und gemerkten Dinge aus dieser Datei zurück, auch auf ein neues Gerät. Was schon da ist, kommt nicht doppelt.</p>
+      <p class="klein leise">Ergänzt du auf einer Liste etwas selbst, merkt sich Packzettel das. Bei deiner nächsten Reise derselben Art steht es dann gleich mit drauf. Sobald etwas gemerkt ist, steht es unten. Tippst du bei einem Eintrag auf „Vergessen“, kommt er auf neue Listen nicht mehr. Auf Listen, die du schon hast, bleibt er stehen.</p>
       <div class="knopfreihe">
         <button class="knopf" type="button" id="x-sicherung" data-ev="export_sicherung">Sicherung speichern</button>
         <button class="knopf" type="button" id="x-einspielen" data-ev="import_sicherung">Sicherung einspielen</button>
@@ -211,9 +226,9 @@
   </section>
 
   <section class="karte" aria-labelledby="beta-titel">
-    <h2 id="beta-titel">Du testest Packzettel mit</h2>
-    <p>Packzettel ist eine <strong>Testfassung</strong>. Er läuft im Browser, damit wir ohne Umweg über einen App-Store schnell verbessern können. In den Play Store und den App Store geht er erst, wenn du und viele andere ihn gern nutzen.</p>
-    <p>Wenn er dir hilft: <strong>teile ihn</strong>. Und sag uns, was fehlt oder stört. So bauen wir ihn mit dir zusammen weiter.</p>
+    <h2 id="beta-titel">Das ist eine Testfassung</h2>
+    <p>Packzettel ist noch eine <strong>Testfassung</strong>. Du nutzt ihn im Browser, ohne App-Store und ohne Konto. In die App-Stores kommt er erst, wenn viele ihn gern nutzen.</p>
+    <p>Hilft er dir? Dann teile ihn gern. Und sag uns, was fehlt oder stört.</p>
     <div class="feld" style="gap:10px">
       <button class="knopf" id="beta-teilen" type="button" data-ev="teilen_app">App teilen</button>
       <label class="label" for="beta-text">Dein Feedback</label>
@@ -222,18 +237,21 @@
       <input id="beta-kontakt" type="text" maxlength="200" autocomplete="off" placeholder="E-Mail oder leer lassen">
       <button class="knopf" id="beta-senden" type="button">Feedback senden</button>
       <p class="klein" id="beta-stand" role="status" aria-live="polite" hidden></p>
-      <p class="klein leise" style="margin:0">Dein Feedback geht an uns (klickmill.app), ohne IP-Adresse und ohne Kennung. Deine Listen schicken wir nie mit. Mehr dazu im <a href="datenschutz.html">Datenschutz</a>.</p>
+      <p class="klein leise" style="margin:0">Dein Feedback geht an uns, die Macher von Packzettel (klickmill.app). Wir speichern dabei weder deine IP-Adresse, also die Internet-Anschrift deines Geräts, noch eine andere Kennung. Deine E-Mail sehen wir nur, wenn du sie selbst einträgst. Deine Listen schicken wir nie mit. Mehr dazu im <a href="datenschutz.html">Datenschutz</a>.</p>
     </div>
   </section>
 
   <section class="karte" aria-labelledby="ueber-titel">
     <h2 id="ueber-titel">Was diese App nach außen schickt</h2>
-    <p>Deine Einträge bleiben in diesem Browser auf deinem Gerät. Nach außen gehen genau zwei Dinge, beide an klickmill.app: ein anonymer Zähler (App-Start und gedrückte Knöpfe, ohne Kennung, ohne Cookie) und dein Feedback, wenn du es oben abschickst. Sonst nichts: kein Konto, keine Werbung, keine fremden Skripte oder Schriften.</p>
+    <p>Deine Listen bleiben in diesem Browser auf deinem Gerät. Nur zwei Dinge gehen an uns (klickmill.app):</p>
+    <p><strong>Ein Nutzungszähler.</strong> Er meldet, dass die App geöffnet wurde und welche der wichtigsten Knöpfe gedrückt wurden. Er weiß nicht, wer du bist, und setzt kein Cookie, also keine kleine Datei zum Wiedererkennen.</p>
+    <p><strong>Dein Feedback</strong>, aber nur, wenn du es selbst abschickst.</p>
+    <p>Sonst nichts. Es gibt kein Konto und keine Werbung. Die App lädt auch nichts von anderen Firmen nach, keine Programme und keine Schriftarten.</p>
     <label class="haken" for="zaehler-aus" style="margin-top:8px">
       <input type="checkbox" id="zaehler-aus">
-      <span>Zähler abschalten. Dann zählt dieses Gerät nicht mehr mit. Der Schalter bleibt nur hier gespeichert.</span>
+      <span>Zähler abschalten. Dann meldet dieser Browser keine App-Starts und Knöpfe mehr.</span>
     </label>
-    <p class="leise" style="margin-top:10px">Version 1.4 vom 26.10.2026 · <a href="aenderungen.html">Was sich geändert hat</a> · <a href="https://github.com/klickmill/packzettel" target="_blank" rel="noopener noreferrer">Quellcode</a></p>
+    <p class="leise" style="margin-top:10px">Version 1.5 vom 26.10.2026 · <a href="aenderungen.html">Was sich geändert hat</a> · <a href="https://github.com/klickmill/packzettel" target="_blank" rel="noopener noreferrer">Quellcode (für Entwickler)</a></p>
   </section>
   <footer class="fuss">
     <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a>
@@ -328,7 +346,9 @@
     $("f-wetter").value = "gemischt";
     document.querySelectorAll('input[name="art"], input[name="verkehr"], input[name="extra"]').forEach(function (i) { i.checked = false; });
     $("art-stadt").checked = true; $("verkehr-flug").checked = true;
-    $("form-titel").textContent = "Deine Packliste in 30 Sekunden";
+    $("form-titel").textContent = "Deine Packliste";
+    $("form-vorwahl").hidden = false;
+    $("form-text").hidden = false;
     $("f-speichern").textContent = "Packliste erstellen";
     $("f-abbrechen").hidden = true;
     ["f-name-fehler", "f-tage-fehler"].forEach(function (id) { $(id).hidden = true; });
@@ -339,6 +359,8 @@
     $("art-" + r.art).checked = true; $("verkehr-" + r.verkehr).checked = true;
     P.EXTRAS.forEach(function (e) { $("extra-" + e[0]).checked = r.extras.indexOf(e[0]) >= 0; });
     $("form-titel").textContent = "Reise ändern: " + r.name;
+    $("form-vorwahl").hidden = true;
+    $("form-text").hidden = true;
     $("f-speichern").textContent = "Liste neu aufbauen";
     $("f-abbrechen").hidden = false;
     $("form-karte").hidden = false;
@@ -567,7 +589,7 @@
   function melde(text) { var s = $("beta-stand"); s.textContent = text; s.hidden = false; }
   $("beta-teilen").addEventListener("click", function () {
     var link = "https://klickmill.app/go/packzettel?s=teilen";
-    var text = "Packzettel baut mir die Packliste in 30 Sekunden, ich hake nur noch ab. Läuft im Browser, ohne Konto.";
+    var text = "Packzettel baut mir die Packliste in wenigen Schritten, ich hake nur noch ab. Läuft im Browser, ohne Konto.";
     if (navigator.share) navigator.share({ title: "Packzettel", text: text, url: link }).catch(function () {});
     else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(function () { melde("Link kopiert: " + link); }, function () { melde("Link zum Weitergeben: " + link); });
     else melde("Link zum Weitergeben: " + link);

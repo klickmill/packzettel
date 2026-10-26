@@ -1,7 +1,7 @@
 {
   "name": "Packzettel",
   "short_name": "Packzettel",
-  "description": "Packliste in 30 Sekunden: abhaken, ergänzen, teilen.",
+  "description": "Packliste in wenigen Schritten: abhaken, ergänzen, teilen.",
   "lang": "de",
   "start_url": "./",
   "scope": "./",
