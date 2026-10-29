@@ -82,6 +82,10 @@
   /* Der Knopf "Packliste erstellen" bleibt am unteren Bildrand sichtbar, solange das
      Formular zu sehen ist, auch wenn Browserleisten den ersten Bildschirm verkürzen. */
   #formular .knopfreihe { position: sticky; bottom: 0; z-index: 1; background: var(--card); padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); }
+  /* Erster Bildschirm nach dem Muster von Klartext: Alltagsfrage groß, ein Hauptknopf in voller Breite, mehr Luft. */
+  .frage { margin: 0 0 14px; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+  .einstieg p { line-height: 1.55; margin-bottom: 12px; }
+  .knopf.breit { display: block; width: 100%; min-height: 52px; }
 
   .fortschritt { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 4px; }
   .fortschritt strong { font-size: 1.6rem; font-weight: 750; letter-spacing: -0.01em; }
@@ -134,19 +138,19 @@
   </header>
 
   <section class="karte" id="form-karte" aria-labelledby="form-titel">
-    <h2 id="form-titel">Deine Packliste</h2>
-    <div class="leise" id="form-text">
+    <h2 class="frage" id="form-titel">Koffer packen?</h2>
+    <div class="leise einstieg" id="form-text">
       <p><strong>Das Problem:</strong> Beim Kofferpacken vergisst du etwas oder packst zu viel ein.</p>
       <p><strong>Die Lösung:</strong> Du sagst, was für eine Reise es ist, wie lange, womit du reist, wie das Wetter wird und wer mitkommt. Packzettel macht dir daraus eine Liste zum Abhaken. Bei vielen Kleidungsstücken steht eine Anzahl dabei, die sich nach der Dauer richtet. Was dir fehlt, ergänzt du selbst.</p>
       <p><strong>Zuerst:</strong> Trag ein, wohin es geht, und tipp unten auf „Packliste erstellen“.</p>
     </div>
-    <p class="klein leise" id="form-vorwahl">Schon ausgewählt sind 7 Tage, Städtereise, gemischtes Wetter und Flug. Tipp an, was bei dir anders ist.</p>
     <form id="formular" novalidate>
       <div class="feld">
         <label for="f-name">Wohin geht es?</label>
         <input type="text" id="f-name" maxlength="60" autocomplete="off" placeholder="z. B. Kreta" aria-describedby="f-name-hilfe">
         <p class="klein leise" id="f-name-hilfe" style="margin:0">Das wird der Name deiner Liste.</p>
       </div>
+      <p class="klein leise" id="form-vorwahl" style="margin:0">Schon ausgewählt sind 7 Tage, Städtereise, gemischtes Wetter und Flug. Tipp an, was bei dir anders ist.</p>
       <p class="fehler" id="f-name-fehler" role="alert" hidden></p>
       <fieldset style="border:0;padding:0;margin:0">
         <legend class="label" style="margin-bottom:6px">Was für eine Reise?</legend>
@@ -174,14 +178,14 @@
       </fieldset>
       <p class="klein leise" style="margin:-4px 0 0">Hier kannst du mehrere antippen, oder keins.</p>
       <div class="knopfreihe">
-        <button class="knopf haupt" type="submit" id="f-speichern">Packliste erstellen</button>
+        <button class="knopf haupt breit" type="submit" id="f-speichern">Packliste erstellen</button>
         <button class="knopf" type="button" id="f-abbrechen" hidden>Abbrechen</button>
       </div>
     </form>
   </section>
 
   <section class="karte" id="liste-karte" aria-labelledby="liste-titel" hidden>
-    <h2 id="liste-titel"></h2>
+    <h2 id="liste-titel" tabindex="-1"></h2>
     <p class="klein leise" id="liste-text"></p>
     <div class="fortschritt"><strong id="fortschritt"></strong><span class="leise klein" id="fortschritt-text"></span></div>
     <div class="balken"><div id="balken" style="width:0"></div></div>
@@ -251,7 +255,7 @@
       <input type="checkbox" id="zaehler-aus">
       <span>Zähler abschalten. Dann meldet dieser Browser keine App-Starts und Knöpfe mehr.</span>
     </label>
-    <p class="leise" style="margin-top:10px">Version 1.5 vom 26.10.2026 · <a href="aenderungen.html">Was sich geändert hat</a> · <a href="https://github.com/klickmill/packzettel" target="_blank" rel="noopener noreferrer">Quellcode (für Entwickler)</a></p>
+    <p class="leise" style="margin-top:10px">Version 1.6 vom 29.10.2026 · <a href="aenderungen.html">Was sich geändert hat</a> · <a href="https://github.com/klickmill/packzettel" target="_blank" rel="noopener noreferrer">Quellcode (für Entwickler)</a></p>
   </section>
   <footer class="fuss">
     <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a>
@@ -274,15 +278,29 @@
   var BASIS = "https://klickmill.app";
   // Zähler-Schalter: liegt nur in diesem Browser, wird vor jedem Ping gelesen.
   var ZAEHLER_AUS = "packzettel-zaehler-aus";
-  function zaehlerAus() {
+  // Gespeicherte Wahl, gilt ab dem nächsten Start.
+  function zaehlerGespeichertAus() {
     try { return localStorage.getItem(ZAEHLER_AUS) === "1"; } catch (e) { return false; }
+  }
+  // In der laufenden Sitzung zählt das Kästchen selbst: lässt der Browser kein Speichern zu,
+  // bleibt der Zähler trotzdem aus, solange die Seite offen ist.
+  function zaehlerAus() {
+    var box = document.getElementById("zaehler-aus");
+    return box ? box.checked : zaehlerGespeichertAus();
   }
   (function () {
     var box = document.getElementById("zaehler-aus");
     if (!box) return;
-    box.checked = zaehlerAus();
+    var text = box.nextElementSibling, normal = text ? text.textContent : "";
+    box.checked = zaehlerGespeichertAus();
     box.addEventListener("change", function () {
-      try { localStorage.setItem(ZAEHLER_AUS, box.checked ? "1" : "0"); } catch (e) {}
+      var geklappt = true;
+      try {
+        if (box.checked) localStorage.setItem(ZAEHLER_AUS, "1"); else localStorage.removeItem(ZAEHLER_AUS);
+      } catch (e) { geklappt = false; }
+      if (text) text.textContent = !geklappt && box.checked
+        ? "Zähler aus, aber nur, bis du die Seite schließt. Dein Browser lässt das Speichern nicht zu."
+        : normal;
     });
   })();
   function ping(ev) {
@@ -346,7 +364,7 @@
     $("f-wetter").value = "gemischt";
     document.querySelectorAll('input[name="art"], input[name="verkehr"], input[name="extra"]').forEach(function (i) { i.checked = false; });
     $("art-stadt").checked = true; $("verkehr-flug").checked = true;
-    $("form-titel").textContent = "Deine Packliste";
+    $("form-titel").textContent = "Koffer packen?"; $("form-titel").className = "frage";
     $("form-vorwahl").hidden = false;
     $("form-text").hidden = false;
     $("f-speichern").textContent = "Packliste erstellen";
@@ -358,7 +376,7 @@
     $("f-name").value = r.name; $("f-tage").value = String(r.tage); $("f-wetter").value = r.wetter;
     $("art-" + r.art).checked = true; $("verkehr-" + r.verkehr).checked = true;
     P.EXTRAS.forEach(function (e) { $("extra-" + e[0]).checked = r.extras.indexOf(e[0]) >= 0; });
-    $("form-titel").textContent = "Reise ändern: " + r.name;
+    $("form-titel").textContent = "Reise ändern: " + r.name; $("form-titel").className = "";
     $("form-vorwahl").hidden = true;
     $("form-text").hidden = true;
     $("f-speichern").textContent = "Liste neu aufbauen";
@@ -397,7 +415,9 @@
     formularLeeren();
     $("form-karte").hidden = true;
     render();
-    $("liste-karte").scrollIntoView({ behavior: "smooth", block: "start" });
+    // Sofort statt weich: der weiche Sprung lief noch, während die Seite sich neu aufbaute, und endete mitten in der Liste.
+    $("liste-karte").scrollIntoView({ behavior: "auto", block: "start" });
+    $("liste-titel").focus({ preventScroll: true });
     zeigeHinweis(alt ? "Liste neu aufgebaut." : "Packliste für " + r.name + " steht.");
   });
 
@@ -574,7 +594,7 @@
     if (!confirm("Alle Reisen, Häkchen und gemerkten Gegenstände auf diesem Gerät löschen? Das lässt sich nicht rückgängig machen.")) return;
     try { localStorage.removeItem(SPEICHER); } catch (e) {}
     try { localStorage.removeItem(ZAEHLER_AUS); } catch (e) {}
-    var zb = document.getElementById("zaehler-aus"); if (zb) zb.checked = false;
+    var zb = document.getElementById("zaehler-aus"); if (zb) { zb.checked = zaehlerGespeichertAus(); zb.dispatchEvent(new Event("change")); } // auch den Satz daneben zurücksetzen
     daten = laden(); formularLeeren(); render(); zeigeHinweis("Alles gelöscht.");
   });
 
